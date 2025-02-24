@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -22,10 +16,11 @@ datasource db {
 //  - Relación con roles (user <-> role) y permisos.
 //
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   email     String   @unique
   password  String
-  fullName  String? // Ejemplo: nombre, apellido, etc.
+  name  String
+  lastName String
   roles     Role[]   @relation("UserRoles") // Relación Many-to-Many con Role
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -40,13 +35,13 @@ model User {
 //  - Relación Many-to-Many con permisos (opcional).
 //
 model Role {
-  id          Int         @id @default(autoincrement())
-  name        String      @unique
+  id          String       @id @default(uuid())
+  name        String       @unique
   description String?
-  users       User[]      @relation("UserRoles") // Relación Many-to-Many con User
+  users       User[]       @relation("UserRoles") // Relación Many-to-Many con User
   permissions Permission[] @relation("RolePermissions") // Relación Many-to-Many con Permission
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 //
@@ -56,10 +51,10 @@ model Role {
 //  - Lista de acciones permitidas a un rol (crear, leer, actualizar, eliminar, etc.)
 //
 model Permission {
-  id          Int    @id @default(autoincrement())
+  id          String   @id @default(uuid())
   action      String
   description String?
-  roles       Role[] @relation("RolePermissions") // Relación Many-to-Many con Role
+  roles       Role[]   @relation("RolePermissions") // Relación Many-to-Many con Role
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -72,12 +67,12 @@ model Permission {
 //  - Un personaje pertenece a una sola casa.
 //
 model House {
-  id          Int          @id @default(autoincrement())
+  id          String       @id @default(uuid())
   name        String       @unique
   description String?
-  characters  Character[] // Relación One-to-Many con Character
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  characters  Character[]  // Relación One-to-Many con Character
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 //
@@ -90,13 +85,13 @@ model House {
 //    -> muchos animales (1:N)
 //
 model Character {
-  id          Int         @id @default(autoincrement())
+  id          String      @id @default(uuid())
   name        String
-  type        String? // Ej: "Humano", "Mago", "Hechicero", etc.
-  houseId     Int // Relación con House (One-to-Many)
+  type        String?     // Ej: "Humano", "Mago", "Hechicero", etc.
+  houseId     String      // Relación con House (One-to-Many)
   house       House       @relation(fields: [houseId], references: [id])
   skills      Skill[]     @relation("CharacterSkills") // Relación Many-to-Many con Skill
-  animals     Animal[] // Relación One-to-Many con Animal
+  animals     Animal[]    // Relación One-to-Many con Animal
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
@@ -109,7 +104,7 @@ model Character {
 //  - Relación Many-to-Many con Character
 //
 model Skill {
-  id          Int         @id @default(autoincrement())
+  id          String      @id @default(uuid())
   name        String      @unique
   description String?
   characters  Character[] @relation("CharacterSkills") // Relación Many-to-Many con Character
@@ -125,12 +120,12 @@ model Skill {
 //  - Relación (1:N) con Character (un personaje puede tener varios animales).
 //
 model Animal {
-  id          Int         @id @default(autoincrement())
+  id          String      @id @default(uuid())
   name        String
   // Indica si es un animal fantástico (true) o normal (false)
   isFantastic Boolean     @default(false)
   description String?
-  characterId Int
+  characterId String
   character   Character   @relation(fields: [characterId], references: [id])
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
