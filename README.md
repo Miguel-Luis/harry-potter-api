@@ -195,138 +195,138 @@ Con estos cambios, el proceso de instalación está optimizado para Windows 11, 
 
 ### Creación de los Modelos en Prisma
 En `prisma/schema.prisma`, define los modelos de la base de datos:
-    ```prisma
-    generator client {
-      provider = "prisma-client-js"
-    }
+  ```prisma
+  generator client {
+    provider = "prisma-client-js"
+  }
 
-    datasource db {
-      provider = "postgresql"
-      url      = env("DATABASE_URL")
-    }
+  datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+  }
 
-    //
-    // ──────────────────────────────────────────────────────────────
-    //   :: MODELO DE USUARIO (Users)
-    // ──────────────────────────────────────────────────────────────
-    //  - Manejo de autenticación con JWT.
-    //  - Contraseñas encriptadas.
-    //  - Relación con roles (user <-> role) y permisos.
-    //
-    model House {
-      id          String       @id @default(uuid())
-      name        String       @unique
-      description String?
-      characters  Character[]  // Relación One-to-Many con Character
-      createdAt   DateTime     @default(now())
-      updatedAt   DateTime     @updatedAt
-    }
+  //
+  // ──────────────────────────────────────────────────────────────
+  //   :: MODELO DE USUARIO (Users)
+  // ──────────────────────────────────────────────────────────────
+  //  - Manejo de autenticación con JWT.
+  //  - Contraseñas encriptadas.
+  //  - Relación con roles (user <-> role) y permisos.
+  //
+  model House {
+    id          String       @id @default(uuid())
+    name        String       @unique
+    description String?
+    characters  Character[]  // Relación One-to-Many con Character
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+  }
 
-    //
-    // ──────────────────────────────────────────────────────────────
-    //   :: MODELO DE ROL (Roles)
-    // ──────────────────────────────────────────────────────────────
-    //  - Asignación de roles a usuarios.
-    //  - Relación Many-to-Many con usuarios.
-    //  - Relación Many-to-Many con permisos (opcional).
-    //
-    model Role {
-      id          String       @id @default(uuid())
-      name        String       @unique
-      description String?
-      users       User[]       @relation("UserRoles") // Relación Many-to-Many con User
-      permissions Permission[] @relation("RolePermissions") // Relación Many-to-Many con Permission
-      createdAt   DateTime     @default(now())
-      updatedAt   DateTime     @updatedAt
-    }
+  //
+  // ──────────────────────────────────────────────────────────────
+  //   :: MODELO DE ROL (Roles)
+  // ──────────────────────────────────────────────────────────────
+  //  - Asignación de roles a usuarios.
+  //  - Relación Many-to-Many con usuarios.
+  //  - Relación Many-to-Many con permisos (opcional).
+  //
+  model Role {
+    id          String       @id @default(uuid())
+    name        String       @unique
+    description String?
+    users       User[]       @relation("UserRoles") // Relación Many-to-Many con User
+    permissions Permission[] @relation("RolePermissions") // Relación Many-to-Many con Permission
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+  }
 
-    //
-    // ──────────────────────────────────────────────────────────────
-    //   :: MODELO DE PERMISO (Permissions)
-    // ──────────────────────────────────────────────────────────────
-    //  - Lista de acciones permitidas a un rol (crear, leer, actualizar, eliminar, etc.)
-    //
-    model Permission {
-      id          String   @id @default(uuid())
-      action      String
-      description String?
-      roles       Role[]   @relation("RolePermissions") // Relación Many-to-Many con Role
-      createdAt   DateTime @default(now())
-      updatedAt   DateTime @updatedAt
-    }
+  //
+  // ──────────────────────────────────────────────────────────────
+  //   :: MODELO DE PERMISO (Permissions)
+  // ──────────────────────────────────────────────────────────────
+  //  - Lista de acciones permitidas a un rol (crear, leer, actualizar, eliminar, etc.)
+  //
+  model Permission {
+    id          String   @id @default(uuid())
+    action      String
+    description String?
+    roles       Role[]   @relation("RolePermissions") // Relación Many-to-Many con Role
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+  }
 
-    //
-    // ──────────────────────────────────────────────────────────────
-    //   :: MODELO DE CASA (Houses)
-    // ──────────────────────────────────────────────────────────────
-    //  - Casas de Hogwarts u otras.
-    //  - Un personaje pertenece a una sola casa.
-    //
-    model House {
-      id          String       @id @default(uuid())
-      name        String       @unique
-      description String?
-      characters  Character[]  // Relación One-to-Many con Character
-      createdAt   DateTime     @default(now())
-      updatedAt   DateTime     @updatedAt
-    }
+  //
+  // ──────────────────────────────────────────────────────────────
+  //   :: MODELO DE CASA (Houses)
+  // ──────────────────────────────────────────────────────────────
+  //  - Casas de Hogwarts u otras.
+  //  - Un personaje pertenece a una sola casa.
+  //
+  model House {
+    id          String       @id @default(uuid())
+    name        String       @unique
+    description String?
+    characters  Character[]  // Relación One-to-Many con Character
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+  }
 
-    //
-    // ──────────────────────────────────────────────────────────────
-    //   :: MODELO DE PERSONAJE (Characters)
-    // ──────────────────────────────────────────────────────────────
-    //  - Un personaje tiene:
-    //    -> una casa (houseId)
-    //    -> muchas habilidades (M:N)
-    //    -> muchos animales (1:N)
-    //
-    model Character {
-      id          String      @id @default(uuid())
-      name        String
-      type        String?     // Ej: "Humano", "Mago", "Hechicero", etc.
-      houseId     String      // Relación con House (One-to-Many)
-      house       House       @relation(fields: [houseId], references: [id])
-      skills      Skill[]     @relation("CharacterSkills") // Relación Many-to-Many con Skill
-      animals     Animal[]    // Relación One-to-Many con Animal
-      createdAt   DateTime    @default(now())
-      updatedAt   DateTime    @updatedAt
-    }
+  //
+  // ──────────────────────────────────────────────────────────────
+  //   :: MODELO DE PERSONAJE (Characters)
+  // ──────────────────────────────────────────────────────────────
+  //  - Un personaje tiene:
+  //    -> una casa (houseId)
+  //    -> muchas habilidades (M:N)
+  //    -> muchos animales (1:N)
+  //
+  model Character {
+    id          String      @id @default(uuid())
+    name        String
+    type        String?     // Ej: "Humano", "Mago", "Hechicero", etc.
+    houseId     String      // Relación con House (One-to-Many)
+    house       House       @relation(fields: [houseId], references: [id])
+    skills      Skill[]     @relation("CharacterSkills") // Relación Many-to-Many con Skill
+    animals     Animal[]    // Relación One-to-Many con Animal
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+  }
 
-    //
-    // ──────────────────────────────────────────────────────────────
-    //   :: MODELO DE HABILIDAD (Skills)
-    // ──────────────────────────────────────────────────────────────
-    //  - Ejemplos: "Volar en Escoba", "Hablar Pársel", etc.
-    //  - Relación Many-to-Many con Character
-    //
-    model Skill {
-      id          String      @id @default(uuid())
-      name        String      @unique
-      description String?
-      characters  Character[] @relation("CharacterSkills") // Relación Many-to-Many con Character
-      createdAt   DateTime    @default(now())
-      updatedAt   DateTime    @updatedAt
-    }
+  //
+  // ──────────────────────────────────────────────────────────────
+  //   :: MODELO DE HABILIDAD (Skills)
+  // ──────────────────────────────────────────────────────────────
+  //  - Ejemplos: "Volar en Escoba", "Hablar Pársel", etc.
+  //  - Relación Many-to-Many con Character
+  //
+  model Skill {
+    id          String      @id @default(uuid())
+    name        String      @unique
+    description String?
+    characters  Character[] @relation("CharacterSkills") // Relación Many-to-Many con Character
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+  }
 
-    //
-    // ──────────────────────────────────────────────────────────────
-    //   :: MODELO DE ANIMAL (Animals)
-    // ──────────────────────────────────────────────────────────────
-    //  - Puede ser fantástico o normal.
-    //  - Relación (1:N) con Character (un personaje puede tener varios animales).
-    //
-    model Animal {
-      id          String      @id @default(uuid())
-      name        String
-      // Indica si es un animal fantástico (true) o normal (false)
-      isFantastic Boolean     @default(false)
-      description String?
-      characterId String
-      character   Character   @relation(fields: [characterId], references: [id])
-      createdAt   DateTime    @default(now())
-      updatedAt   DateTime    @updatedAt
-    }
-    ```
+  //
+  // ──────────────────────────────────────────────────────────────
+  //   :: MODELO DE ANIMAL (Animals)
+  // ──────────────────────────────────────────────────────────────
+  //  - Puede ser fantástico o normal.
+  //  - Relación (1:N) con Character (un personaje puede tener varios animales).
+  //
+  model Animal {
+    id          String      @id @default(uuid())
+    name        String
+    // Indica si es un animal fantástico (true) o normal (false)
+    isFantastic Boolean     @default(false)
+    description String?
+    characterId String
+    character   Character   @relation(fields: [characterId], references: [id])
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+  }
+  ```
 ### Creación y Ejecución de la Migración
 
 1. Crear la migración
